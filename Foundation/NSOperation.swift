@@ -548,7 +548,7 @@ public class NSOperationQueue : NSObject {
     
     public class func mainQueue() -> NSOperationQueue {
 #if DEPLOYMENT_ENABLE_LIBDISPATCH
-        let specific = dispatch_queue_get_specific(dispatch_get_main_queue(), NSOperationQueue.OperationQueueKey)
+        let specific: UnsafeMutablePointer<Void>?  = dispatch_queue_get_specific(dispatch_get_main_queue(), NSOperationQueue.OperationQueueKey)
         if specific == nil {
             return NSOperationQueue(_queue: dispatch_get_main_queue(), maxConcurrentOperations: 1)
         } else {
