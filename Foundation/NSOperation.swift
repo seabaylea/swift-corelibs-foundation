@@ -9,6 +9,9 @@
 
 #if DEPLOYMENT_ENABLE_LIBDISPATCH
 import Dispatch
+#if os(Linux)
+import CoreFoundation
+#endif
 #endif
 
 public class NSOperation : NSObject {
@@ -533,9 +536,14 @@ public class NSOperationQueue : NSObject {
 #if DEPLOYMENT_ENABLE_LIBDISPATCH
         let specific = dispatch_get_specific(NSOperationQueue.OperationQueueKey)
         if specific == nil {
-            if pthread_main_np() == 1 {
+#if os(Linux)
+	    let is_main = _CFIsMainThread()
+#else
+	    let is_main = (pthread_main_np() == 1)
+#endif
+	    if is_main {
                 return NSOperationQueue.mainQueue()
-            } else {
+            } else { 
                 return nil
             }
         } else {

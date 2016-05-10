@@ -674,6 +674,9 @@ CFTypeRef CFMakeCollectable(CFTypeRef cf) CF_AUTOMATED_REFCOUNT_UNAVAILABLE;
 
 #endif
 
+CF_EXPORT
+Boolean _CFIsMainThread(void);
+
 CF_EXTERN_C_END
 
 #endif /* ! __COREFOUNDATION_CFBASE__ */
