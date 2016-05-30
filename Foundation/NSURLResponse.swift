@@ -155,7 +155,11 @@ public class NSHTTPURLResponse : NSURLResponse {
     /// - Important: This is an *experimental* change from the
     /// `[NSObject: AnyObject]` type that Darwin Foundation uses.
     public let allHeaderFields: [String: String]
-    
+
+    internal func value(forHeaderField field: String) -> String? {
+        return valueForCaseInsensitiveKey(field, fields: allHeaderFields)
+    } 
+
     /// Convenience method which returns a localized string
     /// corresponding to the status code for this response.
     /// - Parameter forStatusCode: the status code to use to produce a localized string.

@@ -17,7 +17,7 @@ if Configuration.current.target.sdk == OSType.Linux:
 	foundation.CFLAGS = '-DDEPLOYMENT_TARGET_LINUX -D_GNU_SOURCE '
 	foundation.LDFLAGS = '${SWIFT_USE_LINKER} -Wl,@./CoreFoundation/linux.ld -lswiftGlibc `icu-config --ldflags` -Wl,-defsym,__CFConstantStringClassReference=_TMC10Foundation19_NSCFConstantString -Wl,-Bsymbolic '
 elif Configuration.current.target.sdk == OSType.FreeBSD:
-	foundation.CFLAGS = '-DDEPLOYMENT_TARGET_FREEBSD -I/usr/local/include -I/usr/local/include/libxml2 '
+	foundation.CFLAGS = '-DDEPLOYMENT_TARGET_FREEBSD -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/local/include/curl '
 	foundation.LDFLAGS = ''
 elif Configuration.current.target.sdk == OSType.MacOSX:
 	foundation.CFLAGS = '-DDEPLOYMENT_TARGET_MACOSX '
@@ -49,12 +49,14 @@ foundation.CFLAGS += " ".join([
 	'-Wno-int-conversion',
 	'-Wno-unused-function',
 	'-I/usr/include/libxml2',
+        '-I/usr/include/curl',
 	'-I./',
 ])
 
 swift_cflags = [
 	'-I${BUILD_DIR}/Foundation/usr/lib/swift',
 	'-I/usr/include/libxml2'
+        '-I/usr/include/curl'
 ]
 
 if "XCTEST_BUILD_DIR" in Configuration.current.variables:
@@ -62,25 +64,26 @@ if "XCTEST_BUILD_DIR" in Configuration.current.variables:
 		'-I${XCTEST_BUILD_DIR}',
 		'-L${XCTEST_BUILD_DIR}',
 		'-I/usr/include/libxml2'
+                '-I/usr/include/curl'
 	]
 
 # Configure use of Dispatch in CoreFoundation and Foundation if libdispatch is being built
-#if "LIBDISPATCH_SOURCE_DIR" in Configuration.current.variables:
-#	foundation.CFLAGS += " "+" ".join([
-#		'-DDEPLOYMENT_ENABLE_LIBDISPATCH',
-#		'-I'+Configuration.current.variables["LIBDISPATCH_SOURCE_DIR"],
-#		'-I'+Configuration.current.variables["LIBDISPATCH_BUILD_DIR"]+'/tests'  # for include of dispatch/private.h in CF
-#	])
-#	swift_cflags += ([
-#		'-DDEPLOYMENT_ENABLE_LIBDISPATCH',
-#		'-I'+Configuration.current.variables["LIBDISPATCH_SOURCE_DIR"],
-#		'-I'+Configuration.current.variables["LIBDISPATCH_BUILD_DIR"]+'/src'
-#	])
-#	foundation.LDFLAGS += '-ldispatch -L'+Configuration.current.variables["LIBDISPATCH_BUILD_DIR"]+'/src/.libs '
+if "LIBDISPATCH_SOURCE_DIR" in Configuration.current.variables:
+	foundation.CFLAGS += " "+" ".join([
+		'-DDEPLOYMENT_ENABLE_LIBDISPATCH',
+		'-I'+Configuration.current.variables["LIBDISPATCH_SOURCE_DIR"],
+		'-I'+Configuration.current.variables["LIBDISPATCH_BUILD_DIR"]+'/tests',  # for include of dispatch/private.h in CF
+	])
+	swift_cflags += ([
+		'-DDEPLOYMENT_ENABLE_LIBDISPATCH',
+		'-I'+Configuration.current.variables["LIBDISPATCH_SOURCE_DIR"],
+                '-I'+Configuration.current.variables["LIBDISPATCH_BUILD_DIR"]+'/src'
+	])
+	foundation.LDFLAGS += '-ldispatch -L'+Configuration.current.variables["LIBDISPATCH_BUILD_DIR"]+'/src/.libs '
 
 foundation.SWIFTCFLAGS = " ".join(swift_cflags)
 
-foundation.LDFLAGS += '-lpthread -ldl -lm -lswiftCore -lxml2 '
+foundation.LDFLAGS += '-lpthread -ldl -lm -lswiftCore -lxml2 -lcurl '
 
 if "XCTEST_BUILD_DIR" in Configuration.current.variables:
 	foundation.LDFLAGS += '-L${XCTEST_BUILD_DIR}'
@@ -119,6 +122,7 @@ public = [
 	'CoreFoundation/Collections.subproj/CFArray.h',
 	'CoreFoundation/RunLoop.subproj/CFRunLoop.h',
 	'CoreFoundation/URL.subproj/CFURLAccess.h',
+        'CoreFoundation/URL.subproj/CFURLSessionInterface.h',
 	'CoreFoundation/Locale.subproj/CFDateFormatter.h',
 	'CoreFoundation/RunLoop.subproj/CFMachPort.h',
 	'CoreFoundation/PlugIn.subproj/CFPlugInCOM.h',
@@ -131,6 +135,7 @@ public = [
 	'CoreFoundation/NumberDate.subproj/CFNumber.h',
 	'CoreFoundation/Collections.subproj/CFData.h',
 	'CoreFoundation/String.subproj/CFAttributedString.h',
+        'CoreFoundation/Base.subproj/CoreFoundation_Prefix.h'
 ],
 private = [
 	'CoreFoundation/Base.subproj/ForSwiftFoundationOnly.h',
@@ -264,6 +269,7 @@ sources = CompileSources([
 	'CoreFoundation/String.subproj/CFRegularExpression.c',
 	'CoreFoundation/String.subproj/CFAttributedString.c',
 	'CoreFoundation/String.subproj/CFRunArray.c',
+        'CoreFoundation/URL.subproj/CFURLSessionInterface.c'
 ])
 
 sources.add_dependency(headers)
@@ -360,7 +366,18 @@ swift_sources = CompileSwiftSources([
 	'Foundation/NSURLProtocol.swift',
 	'Foundation/NSURLRequest.swift',
 	'Foundation/NSURLResponse.swift',
-	'Foundation/NSURLSession.swift',
+	'Foundation/NSURLSession/Configuration.swift',
+	'Foundation/NSURLSession/EasyHandle.swift',
+	'Foundation/NSURLSession/HTTPBodySource.swift',
+	'Foundation/NSURLSession/HTTPMessage.swift',
+	'Foundation/NSURLSession/MultiHandle.swift',
+	'Foundation/NSURLSession/NSURLSession.swift',
+	'Foundation/NSURLSession/NSURLSessionConfiguration.swift',
+	'Foundation/NSURLSession/NSURLSessionDelegate.swift',
+        'Foundation/NSURLSession/NSURLSessionTask.swift',
+	'Foundation/NSURLSession/TaskRegistry.swift',
+	'Foundation/NSURLSession/TransferState.swift',
+	'Foundation/NSURLSession/libcurlHelpers.swift',
 	'Foundation/NSUserDefaults.swift',
 	'Foundation/NSUUID.swift',
 	'Foundation/NSValue.swift',
