@@ -430,7 +430,9 @@ extension NSURLSession {
      * upload convenience method.
      */
     public func uploadTask(with request: NSURLRequest, fromFile fileURL: NSURL, completionHandler: (NSData?, NSURLResponse?, NSError?) -> Void) -> NSURLSessionUploadTask { NSUnimplemented() }
-    public func uploadTask(with request: NSURLRequest, fromData bodyData: NSData?, completionHandler: (NSData?, NSURLResponse?, NSError?) -> Void) -> NSURLSessionUploadTask { NSUnimplemented() }
+    public func uploadTask(with request: NSURLRequest, fromData bodyData: NSData?, completionHandler: (NSData?, NSURLResponse?, NSError?) -> Void) -> NSURLSessionUploadTask { 
+        return uploadTask(with: Request(request), body: .data(createDispatchData(bodyData!)), behaviour: .dataCompletionHandler(completionHandler))
+    }
     
     /*
      * download task convenience methods.  When a download successfully
@@ -461,7 +463,6 @@ internal extension NSURLSession {
         case downloadCompletionHandler(NSURLSession.TaskRegistry.DownloadTaskCompletion)
     }
     func behaviour(for task: NSURLSessionTask) -> TaskBehaviour {
-        print("In behaviour(for task)")
         switch taskRegistry.behaviour(for: task) {
         case .dataCompletionHandler(let c): return .dataCompletionHandler(c)
         case .downloadCompletionHandler(let c): return .downloadCompletionHandler(c)
@@ -500,7 +501,6 @@ final internal class MissingURLSession: NSURLSessionProtocol {
         fatalError()
     }
     func behaviour(for: NSURLSessionTask) -> NSURLSession.TaskBehaviour {
-        print("Reached here") 
         fatalError()
     }
 }

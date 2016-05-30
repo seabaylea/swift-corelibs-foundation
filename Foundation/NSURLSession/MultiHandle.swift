@@ -101,7 +101,7 @@ private extension NSURLSession.MultiHandle {
         var socketSources = SocketSources.from(socketSourcePtr: socketSourcePtr)
         if socketSources == nil && action.needsSource {
             let s = SocketSources()
-            let p = OpaquePointer(bitPattern: Unmanaged.passRetained(s))
+            let p = Unmanaged.passRetained(s).toOpaque()
             CFURLSessionMultiHandleAssign(rawHandle, socket, UnsafeMutablePointer<Void>(p))
             socketSources = s
         } else if socketSources != nil && action == .unregister {

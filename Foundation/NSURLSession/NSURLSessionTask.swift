@@ -58,7 +58,6 @@ public class NSURLSessionTask : NSObject, NSCopying {
         // here at a centralized place to make sure the internal state always
         // matches up with the state of the easy handle being added and paused.
         willSet {
-            print("willSet")
             if !internalState.isEasyHandlePaused && newValue.isEasyHandlePaused {
                 fatalError("Need to solve pausing receive.")
             }
@@ -67,7 +66,6 @@ public class NSURLSessionTask : NSObject, NSCopying {
             }
         }
         didSet {
-            print("oldSet")
             if !oldValue.isEasyHandleAddedToMultiHandle && internalState.isEasyHandleAddedToMultiHandle {
                 session.add(handle: easyHandle)
             }
@@ -453,23 +451,15 @@ private extension NSURLSessionTask {
     /// Start a new transfer
     func startNewTransfer(with request: NSURLRequest) {
         currentRequest = request
-        print("request = \(request)")
-        print("url = \(request.url)")
         guard let url = request.url else { fatalError("No URL in request.") }
-        print("passed guard")
         internalState = .transferReady(createTransferState(url: url))
-        print("changed internalState")
         configureEasyHandle(for: request)
-        print("configued easyHandle")
         if suspendCount < 1 {
-            print("performing Resume")
             performResume()
         }
-        print("done")
     }
     /// Creates a new transfer state with the given behaviour:
     func createTransferState(url: NSURL) -> NSURLSessionTask.TransferState {
-        print("in createTransferState")
         let drain = createTransferBodyDataDrain()
         switch body {
         case .none:
@@ -492,8 +482,6 @@ private extension NSURLSessionTask {
     ///
     /// This depends on what the delegate / completion handler need.
     private func createTransferBodyDataDrain() -> NSURLSessionTask.TransferState.DataDrain {
-        print("In createTransferBodyDrain session = \(session)")
-        print(session.behaviour(for: self))
         switch session.behaviour(for: self) {
         case .noDelegate:
             return .ignore
